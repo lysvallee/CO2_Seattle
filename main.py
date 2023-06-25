@@ -40,11 +40,12 @@ async def add_building(building: Buildings):
 
 @app.get("/")
 async def root(request: Request):
-    page_title = "Building Energy Efficiency Dashboard"
+    page_title = "Building Energy Efficiency in Seattle"
     dashboard_button_text = "Go to Dashboard"
     dashboard_button_url = request.url_for("get_dashboard")
     predictions_button_text = "Get Predictions"
     predictions_button_url = request.url_for("get_predictions")
+    image_url = request.url_for("static", path="images/city-4558069_1280.jpg")
     content = f"""
     <html>
         <head>
@@ -82,8 +83,10 @@ async def root(request: Request):
         <body>
             <div class="container">
                 <h1>{page_title}</h1>
-                <p>Welcome to the Building Energy Efficiency Dashboard. Click the buttons below to access the dashboard and get predictions.</p>
+                <p>Welcome! Click the button below to access the dashboard.</p>
                 <a href="{dashboard_button_url}" class="button">{dashboard_button_text}</a>
+                <br>
+                <img src="{image_url}">
                 <p>Click the button below to upload a CSV file and get predictions.</p>
                 <a href="{predictions_button_url}" class="button">{predictions_button_text}</a>
             </div>

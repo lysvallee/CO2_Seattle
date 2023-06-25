@@ -7,7 +7,7 @@ client = TestClient(app)
 def test_root():
     response = client.get("/")
     assert response.status_code == 200
-    assert "<title>Building Energy Efficiency Dashboard</title>" in response.text
+    assert "<title>Building Energy Efficiency in Seattle</title>" in response.text
 
 def test_get_dashboard():
     response = client.get("/dashboard/")
