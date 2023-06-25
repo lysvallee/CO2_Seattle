@@ -1,5 +1,4 @@
 from sqlmodel import Session
-from fastapi.middleware.cors import CORSMiddleware
 from fastapi import FastAPI, HTTPException
 from models import Buildings
 from services import engine, create_db_and_tables
