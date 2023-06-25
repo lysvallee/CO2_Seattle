@@ -191,4 +191,4 @@ async def get_predictions(request: Request):
 @app.post("/predict/")
 async def predict(file: UploadFile = File(...)):
     # Code to process the uploaded CSV file and make predictions goes here
-    return {"message": "Todos: update models.py to add the necessary columns with proper types, create several more Plotly charts that will enrich the dashboard, then build a model with scikit-learn or fastai."}
+    return {"message": "Todos: update models.py to add the necessary columns with proper types, create several more Plotly charts for the dashboard & build a model with fastai."}
