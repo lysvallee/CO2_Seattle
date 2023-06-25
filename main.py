@@ -37,7 +37,6 @@ async def add_building(building: Buildings):
 
         return building
 
-
 @app.get("/")
 async def root(request: Request):
     page_title = "Building Energy Efficiency in Seattle"
@@ -45,7 +44,10 @@ async def root(request: Request):
     dashboard_button_url = request.url_for("get_dashboard")
     predictions_button_text = "Get Predictions"
     predictions_button_url = request.url_for("get_predictions")
-    image_url = request.url_for("static", path="images/city-4558069_1280.jpg")
+
+    with open("images/seattle-2609031_1280.jpg", "rb") as image_file:
+        encoded_image = base64.b64encode(image_file.read()).decode()
+
     content = f"""
     <html>
         <head>
@@ -86,7 +88,7 @@ async def root(request: Request):
                 <p>Welcome! Click the button below to access the dashboard.</p>
                 <a href="{dashboard_button_url}" class="button">{dashboard_button_text}</a>
                 <br>
-                <img src="{image_url}">
+                <img src="data:image/jpg;base64,{encoded_image}" width="800" height="500">
                 <p>Click the button below to get predictions.</p>
                 <a href="{predictions_button_url}" class="button">{predictions_button_text}</a>
             </div>
@@ -94,7 +96,6 @@ async def root(request: Request):
     </html>
     """
     return HTMLResponse(content=content)
-
     
     
 @app.get("/dashboard/")
@@ -126,7 +127,7 @@ async def get_dashboard():
         image_filename = "images/seattle-8027337_1280.jpg"
         encoded_image = base64.b64encode(open(image_filename, 'rb').read()).decode()
         seattle_pic = f"data:image/jpg;base64,{encoded_image}"
-        image_html = f'<div style="text-align:center;"><img src="{seattle_pic}" width="800" height="300"></div>'
+        image_html = f'<div style="text-align:center;"><img src="{seattle_pic}" width="1100" height="400"></div>'
         
         # Add a title and subtitle
         title_html = "<h1 style='text-align:center;'>Interactive Dashboard</h1>"
