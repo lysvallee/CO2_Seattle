@@ -19,6 +19,6 @@ def test_get_dashboard():
 def test_get_predictions():
     response = client.get("/predictions/")
     assert response.status_code == 200
-    assert "Building Energy Efficiency Predictions" in response.text
-    assert "Upload a CSV file with building data to get energy efficiency predictions." in response.text
+    assert "CO2 Emissions Predictions" in response.text
+    assert "Upload a CSV file with building data." in response.text
 

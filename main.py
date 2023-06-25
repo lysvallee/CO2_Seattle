@@ -87,7 +87,7 @@ async def root(request: Request):
                 <a href="{dashboard_button_url}" class="button">{dashboard_button_text}</a>
                 <br>
                 <img src="{image_url}">
-                <p>Click the button below to upload a CSV file and get predictions.</p>
+                <p>Click the button below to get predictions.</p>
                 <a href="{predictions_button_url}" class="button">{predictions_button_text}</a>
             </div>
         </body>
@@ -139,7 +139,7 @@ async def get_dashboard():
 
 @app.get("/predictions/")
 async def get_predictions(request: Request):
-    page_title = "Building Energy Efficiency Predictions"
+    page_title = "CO2 Emissions Predictions"
     upload_button_text = "Upload CSV File"
     content = f"""
     <html>
@@ -178,7 +178,7 @@ async def get_predictions(request: Request):
         <body>
             <div class="container">
                 <h1>{page_title}</h1>
-                <p>Upload a CSV file with building data to get energy efficiency predictions.</p>
+                <p>Upload a CSV file with building data.</p>
                 <form action="/predict/" method="post" enctype="multipart/form-data">
                     <input type="file" name="file" accept=".csv">
                     <br>
