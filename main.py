@@ -220,7 +220,7 @@ async def predict(file: UploadFile = File(...)):
 # Add a new endpoint to display the profiling report
 @app.get("/dashboard/")
 async def get_dashboard():
-    file_path = os.path.join(os.path.dirname(os.path.abspath(__file__)), "your_report.html")
+    file_path = os.path.join(os.path.dirname(os.path.abspath(__file__)), "profiling_report.html")
     return FileResponse(file_path)
 
 
