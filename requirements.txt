@@ -29,12 +29,10 @@ googleapis-common-protos==1.59.1
 greenlet==2.0.2
 grpcio==1.51.3
 h11==0.14.0
-hpsklearn @ git+https://github.com/hyperopt/hyperopt-sklearn@4b3f6fde3a1ded2e71e8373d52c1b51a0239ef91
 htmlmin==0.1.12
 httpcore==0.17.2
 httpwatcher==0.5.2
 httpx==0.24.1
-hyperopt==0.2.7
 idna==3.4
 ImageHash==4.3.1
 importlib-resources==5.12.0
@@ -98,7 +96,6 @@ threadpoolctl==3.1.0
 tomli==2.0.1
 tornado==4.5.3
 tqdm==4.65.0
-tune-sklearn==0.4.6
 typeguard==2.13.3
 typing_extensions==4.6.3
 tzdata==2023.3
