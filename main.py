@@ -314,19 +314,19 @@ async def predict(file: UploadFile = File(...)):
 # Add a new endpoint to display the profiling report
 @app.get("/dashboard/")
 async def get_dashboard():
-    file_path = os.path.join(os.path.dirname(os.path.abspath(__file__)), "eda_predictions/profiling_report.html")
+    file_path = os.path.join(os.path.dirname(os.path.abspath(__file__)), "eda/profiling_report.html")
     return FileResponse(file_path)
 
 
 @app.get("/recommendations/")
 async def get_recommendations():
-    with open("eda_predictions/neighborhood.html", "r") as f:
+    with open("eda/plots/neighborhood.html", "r") as f:
         neighborhood = f.read()
 
-    with open("eda_predictions/age.html", "r") as f:
+    with open("eda/plots/age.html", "r") as f:
         age = f.read()
 
-    with open("eda_predictions/estar.html", "r") as f:
+    with open("eda/plots/estar.html", "r") as f:
         estar = f.read()
 
     content = f"{neighborhood}\n{age}\n{estar}"
