@@ -54,7 +54,7 @@ async def root(request: Request):
     recommendations_button_text = "Recommandations"
     recommendations_button_url = request.url_for("get_recommendations")
     
-    with open("images/seattle-8027337_1280.jpg", "rb") as image_file:
+    with open("images/TexturesCom_LandscapesCityNight0038_1_S.jpg", "rb") as image_file:
         encoded_image = base64.b64encode(image_file.read()).decode()
 
     content = f"""
@@ -62,15 +62,30 @@ async def root(request: Request):
         <head>
             <title>{page_title}</title>
             <style>
+                @import url('https://fonts.googleapis.com/css2?family=Montserrat:wght@500&display=swap');
+                
                 body {{
-                    font-family: Arial, sans-serif;
-                    background-color: gray;
+                    font-family: 'Montserrat', sans-serif;
+                    margin: 0;
+                    padding: 0;
+                    background: url(data:image/jpg;base64,{encoded_image}) no-repeat center center fixed;
+                    background-size: cover;
                 }}
                 .container {{
                     max-width: 800px;
                     margin: 0 auto;
                     text-align: center;
                     padding-top: 50px;
+                    background-color: rgba(255, 255, 255, 0.5);
+                    border-radius: 8px;
+                    backdrop-filter: blur(10px);
+                    box-shadow: 0 0 10px rgba(0, 0, 0, 0.3);
+                }}
+                h1 {{
+                    font-size: 48px;
+                    color: #333333;
+                    margin-bottom: 30px;
+                    text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.3);
                 }}
                 .button {{
                     display: inline-block;
@@ -85,9 +100,16 @@ async def root(request: Request):
                     font-weight: bold;
                     cursor: pointer;
                     transition: background-color 0.3s ease;
+                    text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.3);
                 }}
                 .button:hover {{
                     background-color: #EF553B;
+                }}
+                .image-container {{
+                    margin-top: 50px;
+                }}
+                .image {{
+                    display: none;
                 }}
             </style>
         </head>
@@ -96,7 +118,6 @@ async def root(request: Request):
                 <h1>{page_title}</h1>
                 <a href="{dashboard_button_url}" class="button">{dashboard_button_text}</a>
                 <br>
-                <img src="data:image/jpg;base64,{encoded_image}" width="800" height="500">
                 <a href="{predictions_button_url}" class="button">{predictions_button_text}</a>
                 <br>
                 <a href="{recommendations_button_url}" class="button">{recommendations_button_text}</a>
@@ -104,13 +125,18 @@ async def root(request: Request):
         </body>
     </html>
     """
-    return HTMLResponse(content=content)
-    
+    return HTMLResponse(content=content)    
+
+
 
 @app.get("/predictions/")
 async def get_predictions(request: Request):
     page_title = "Emissions CO2"
     upload_button_text = "Comparaison"
+
+    with open("images/TexturesCom_LandscapesCityNight0038_1_S.jpg", "rb") as image_file:
+        encoded_image = base64.b64encode(image_file.read()).decode("utf-8")
+
     content = f"""
     <html>
         <head>
@@ -118,13 +144,39 @@ async def get_predictions(request: Request):
             <style>
                 body {{
                     font-family: Arial, sans-serif;
-                    background-color: #F7F7F7;
+                    margin: 0;
+                    padding: 0;
+                    background: url(data:image/jpeg;base64,{encoded_image}) no-repeat center center fixed;
+                    background-size: cover;
                 }}
                 .container {{
+                    background-color: rgba(255, 255, 255, 0.7);
+                    position: absolute;
+                    top: 50%;
+                    left: 50%;
+                    transform: translate(-50%, -50%);
                     max-width: 800px;
                     margin: 0 auto;
                     text-align: center;
-                    padding-top: 50px;
+                    padding: 50px;
+                }}
+                h1 {{
+                    font-size: 48px;
+                    color: #333333;
+                    margin-bottom: 30px;
+                    text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.3);
+                }}
+                p {{
+                    font-size: 24px;
+                    color: #333333;
+                    margin-bottom: 20px;
+                }}
+                form {{
+                    margin-top: 20px;
+                }}
+                input[type="file"] {{
+                    display: block;
+                    margin: 0 auto;
                 }}
                 .button {{
                     display: inline-block;
@@ -148,7 +200,7 @@ async def get_predictions(request: Request):
         <body>
             <div class="container">
                 <h1>{page_title}</h1>
-                <p>Upload a CSV file with building data.</p>
+                <p>Chargez un fichier CSV avec vos données</p>
                 <form action="/predict/" method="post" enctype="multipart/form-data">
                     <input type="file" name="file" accept=".csv">
                     <br>
@@ -161,6 +213,9 @@ async def get_predictions(request: Request):
     """
     return HTMLResponse(content=content)
 
+
+
+
 @app.post("/predict/")
 async def predict(file: UploadFile = File(...)):
     # Import CSV file into a Pandas dataframe
@@ -169,153 +224,158 @@ async def predict(file: UploadFile = File(...)):
     # Put column names in lowercase
     df.columns = map(str.lower, df.columns)
 
-    # Fix the case and replace duplicates
-    df['neighborhood'] = df['neighborhood'].str.upper()
-    df['neighborhood'] = df['neighborhood'].str.replace('DELRIDGE NEIGHBORHOODS','DELRIDGE')
-
-    # Fix 'energystarscore'
-    df['energystarscore'] = df['energystarscore'].replace("NULL", None)
-
-
-    # Impute 'zipcode' missing values from 'latitude' and 'longitude'
-    location = ['zipcode', 'latitude', 'longitude']
-    dfl = df[location]
-    dfl = pd.DataFrame(data=KNNImputer(n_neighbors=10).fit_transform(dfl), index=df.index, columns=location)
-    df = df.drop(columns=location).join(dfl)
-
-    """#x.Feature Engineering"""
-
-    # Derive the buildings age from 'yearbuilt'
+    # Perform data formatting prior to predictions (see EDA file for details)
     current_year = datetime.datetime.now().year
     df['age'] = df['yearbuilt'].apply(lambda x: current_year - x)
     df.drop(['yearbuilt'], axis=1, inplace=True)
 
-
-    # Create new columns for the types of energy consumption (steam/electricity/gaz)df['numberofbuildings'] = df['numberofbuildings'].astype('int64')
-    def energy_usage(cell):
-        if cell > 0:
-          return True
-        else:
-          return False
-    df['steamuse_kbtu'] = df['steamuse(kbtu)'].apply(energy_usage)
-    df['electricity_kbtu'] = df['electricity(kbtu)'].apply(energy_usage)
-    df['naturalgas_kbtu'] = df['naturalgas(kbtu)'].apply(energy_usage)
-    df.rename(columns={'steamuse_kbtu': 'steam'}, inplace=True)
-    df.rename(columns={'electricity_kbtu': 'electricity'}, inplace=True)
-    df.rename(columns={'naturalgas_kbtu': 'naturalgas'}, inplace=True)
-
+    df.rename(columns={'steamuse(kbtu)': 'steamuse_kbtu'}, inplace=True)
+    df.rename(columns={'naturalgas(kbtu)': 'naturalgas_kbtu'}, inplace=True)
     df.rename(columns={'siteeui(kbtu/sf)': 'siteeui_kbtu_sf'}, inplace=True)
     df.rename(columns={'siteeuiwn(kbtu/sf)': 'siteeuiwn_kbtu_sf'}, inplace=True)
     df.rename(columns={'sourceeui(kbtu/sf)': 'sourceeui_kbtu_sf'}, inplace=True)
     df.rename(columns={'sourceeuiwn(kbtu/sf)': 'sourceeuiwn_kbtu_sf'}, inplace=True)
     df.rename(columns={'siteenergyuse(kbtu)': 'siteenergyuse_kbtu'}, inplace=True)
     df.rename(columns={'siteenergyusewn(kbtu)': 'siteenergyusewn_kbtu'}, inplace=True)
-    df.rename(columns={'propertygfabuilding(s)': 'propertygfabuilding_s'}, inplace=True)
 
-    
-    """#x.Target engineering
+    def energy_usage(cell):
+        if cell > 0:
+          return 'Yes'
+        else:
+          return 'No'
+    df['steamuse_kbtu'] = df['steamuse_kbtu'].apply(energy_usage)
+    df['naturalgas_kbtu'] = df['naturalgas_kbtu'].apply(energy_usage)
+    df.rename(columns={'steamuse_kbtu': 'steam'}, inplace=True)
+    df.rename(columns={'naturalgas_kbtu': 'naturalgas'}, inplace=True)
 
-    'sourceeuiwn_kbtu_sf', 'sourceeui_kbtu_sf', 'siteeuiwn_kbtu_sf', 'siteeui_kbtu_sf', 'siteenergyusewn_kbtu', 'siteenergyuse_kbtu', 'totalghgemissions'
-    """
+    df['zipcode'] = df['zipcode'].astype('object')
+    df['councildistrictcode'] = df['councildistrictcode'].astype('object')
+    df['numberofbuildings'] = df['numberofbuildings'].astype('Int64')
+    df['largestpropertyusetypegfa'] = df['largestpropertyusetypegfa'].astype('Int64')
 
     df['source_site'] = df['sourceeuiwn_kbtu_sf'] / df['siteeuiwn_kbtu_sf']
 
-    # Now that there are less missing values, change the feature types
-    df['zipcode'] = df['zipcode'].astype('object')
-    df['councildistrictcode'] = df['councildistrictcode'].astype('object')
-    df['numberofbuildings'] = df['numberofbuildings'].astype('int64')    
+    df['source_wn'] = df['sourceeuiwn_kbtu_sf'] / df['sourceeui_kbtu_sf']
 
-    # Load the trained model
-    from joblib import load
-    loaded_model = load('eda_predictions/model.joblib')
-    
-    # Make predictions
+    df['site_wn'] = df['siteeuiwn_kbtu_sf'] / df['siteeui_kbtu_sf']
 
-    # Fix dtype changes after CSV exporting
-    df['zipcode'] = df['zipcode'].astype('object')
-    df['councildistrictcode'] = df['councildistrictcode'].astype('object')
-    df['energystarscore'] = df['energystarscore'].astype('object')
-    # Turn the boolean columns into categorical for target encoding
-    for column in df.select_dtypes(include=['bool']).columns:
-      df[column] = df[column].astype('object')
+    targets = ['sourceeuiwn_kbtu_sf', 'source_wn', 'siteeuiwn_kbtu_sf', 'site_wn', 'source_site', 'siteenergyusewn_kbtu', 'siteenergyuse_kbtu', 'totalghgemissions']
 
-    """#4.Gestion des targets multiples
+    def transform_negatives(cell):
+        if cell < 0:
+          return 0
+        else:
+          return cell
+    for target in targets:
+        df[target] = df[target].apply(transform_negatives)
 
-    Scikit-learn propose deux solutions :
-    - MultiOutputRegressor si les variables sont traitées de façon indépendante.
-    - RegressorChain si elles sont dépendantes.
+    df =df[['numberofbuildings',
+     'propertygfatotal',
+     'propertygfaparking',
+     'age',
+     'primarypropertytype',
+     'councildistrictcode',
+     'largestpropertyusetype',
+     'steam',
+     'naturalgas',
+     'listofallpropertyusetypes',
+     'source_site', 'sourceeuiwn_kbtu_sf', 'sourceeui_kbtu_sf', 'siteeuiwn_kbtu_sf', 'siteeui_kbtu_sf', 'siteenergyusewn_kbtu', 'siteenergyuse_kbtu', 'totalghgemissions']]
 
-    https://scikit-learn.org/stable/modules/multiclass.html
-
-    Il y a une corrélation élevée (0.873) entre la consommation énergétique et les émissions de CO2, donc on choisira la seconde option.
-
-    Comme nous prédirons les émissions après la consommation, cela nous mène à créer une variable targets commençant par la colonne siteenergyuse_kbtu :
-    """
 
     # Define the targets and features
     targets = ['source_site', 'sourceeuiwn_kbtu_sf', 'sourceeui_kbtu_sf', 'siteeuiwn_kbtu_sf', 'siteeui_kbtu_sf', 'siteenergyusewn_kbtu', 'siteenergyuse_kbtu', 'totalghgemissions']
     y = df[targets]
     X = df.drop(targets, axis=1)
-    print(X.columns.tolist())
-
-    """#5.Preprocessing des données
-
-    L'EDA a montré que certaines variables étaient loin d'avoir une distribution gaussienne. Pour y remédier, le QuantileTransformer semble préférable au PowerTransformer parce qu'il est efficace quelle que soit la distribution de départ : https://scikit-learn.org/stable/modules/preprocessing.html#mapping-to-a-gaussian-distribution
-    """
-
-    # Apply QuantileTransformer to the target variables
-    qt = PowerTransformer()
-    y = qt.fit_transform(y)
-
-    # Retrieve the transformed column corresponding to 'totalghgemissions'
-    totalghg = pd.DataFrame(y[:, -1], columns=['totalghgemissions'])
-
-    # Preprocess categorical features with a target encoder based on 'totalghgemissions'
-    def target_encoder(X=None):
-      X_cat = X.select_dtypes(include=['object'])
-      X_num = X.select_dtypes(include=['int64', 'float64'])
-      encoder = GLMMEncoder(verbose=2, drop_invariant=False, return_df=True, handle_missing='return_nan', randomized=True, binomial_target=False)
-      X_cat_encoded = encoder.fit_transform(X_cat, totalghg)
-      X = pd.concat([X_cat_encoded, X_num], axis=1)
-      return X
-
-    X = target_encoder(X)
-    print(X.columns.tolist())
+    
+    # Load the trained model
+    from joblib import load
+    loaded_model = load('predictions/best_model.joblib')
+    # Make predictions    
     y_pred = loaded_model.predict(X)
-    y_pred = qt.inverse_transform(y_pred)
+    # Round all values in y_pred to 2 decimal places
+    y_pred = np.round(y_pred, decimals=2)
+
+    # Create a simplified dataframe to compare the predictions side by side
     comp = pd.concat([df['totalghgemissions'], pd.Series(y_pred[:, -1], name='predicted_ghg_emissions')], axis=1)
 
-##############################################
-
-    
-    # column_num=['largestpropertyusetypegfa', 'age', 'numberofbuildings', 'numberoffloors']
-    # column_cat=['steamuse', 'electricity', 'naturalgas', 'compliancestatus']
-    # df = pd.concat([df[column_num], df[column_cat], df['totalghgemissions']], axis=1)
-    # X_test = df.drop(columns='totalghgemissions')
-    # y_pred = loaded_model.predict(X_test)
-    # comp = pd.concat([df['totalghgemissions'], pd.Series(y_pred, name='predicted_ghg_emissions')], axis=1)
-    
     # Display the resulting dataframe
     comp_html = comp.to_html(index=False)
+
+    with open("images/TexturesCom_LandscapesCityNight0038_1_S.jpg", "rb") as image_file:
+        encoded_image = base64.b64encode(image_file.read()).decode("utf-8")
+
     content = f"""
     <html>
         <head>
-            <title>CO2 Emissions Predictions</title>
+            <title>CO2 Emissions Prédictions</title>
+            <style>
+                @import url('https://fonts.googleapis.com/css2?family=Montserrat:wght@500&display=swap');
+
+                body {{
+                    font-family: 'Montserrat', sans-serif;
+                    margin: 0;
+                    padding: 0;
+                    background: url(data:image/jpeg;base64,{encoded_image}) no-repeat center center fixed;
+                    background-size: cover;
+                }}
+                .container {{
+                    background-color: rgba(255, 255, 255, 0.7);
+                    position: absolute;
+                    top: 50%;
+                    left: 50%;
+                    transform: translate(-50%, -50%);
+                    padding: 20px;
+                }}
+                h1 {{
+                    font-size: 48px;
+                    color: #333333;
+                    margin-bottom: 30px;
+                    text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.3);
+                    text-align: center;
+                }}
+                table {{
+                    margin: 0 auto;
+                    font-size: 18px;
+                    width: 80%;
+                }}
+            </style>
         </head>
         <body>
-            <h1>CO2 Emissions Predictions</h1>
-            <p>Predicted CO2 emissions:</p>
-            {comp_html}
+            <div class="container">
+                <h1>Prédictions Emissions CO2</h1>         
+                <table>
+                    {comp_html}
+                </table>
+            </div>
         </body>
     </html>
     """
-    return HTMLResponse(content=content)
+    return HTMLResponse(content=content)        
 
 # Add a new endpoint to display the profiling report
 @app.get("/dashboard/")
 async def get_dashboard():
     file_path = os.path.join(os.path.dirname(os.path.abspath(__file__)), "eda/profiling_report.html")
     return FileResponse(file_path)
+
+    content = f"""
+    <html>
+        <head>
+            <title>Dashboard</title>
+            <style>
+                body {{
+                    font-family: Arial, sans-serif;
+                    background-color: #808080;
+                }}
+            </style>
+        </head>
+        <body>
+            <embed src="{file_path}" type="text/html" width="100%" height="100%"></embed>
+        </body>
+    </html>
+    """
+    return HTMLResponse(content=content)
+
 
 
 @app.get("/recommendations/")
@@ -329,5 +389,38 @@ async def get_recommendations():
     with open("eda/plots/estar.html", "r") as f:
         estar = f.read()
 
-    content = f"{neighborhood}\n{age}\n{estar}"
-    return HTMLResponse(content=content)
+    # Add space between HTML files
+    html_content = f"""
+    <html>
+        <head>
+            <title>Recommendations</title>
+            <style>
+                body {{
+                    font-family: Arial, sans-serif;
+                    background-color: #808080;
+                    margin: 0;
+                    padding: 20px;
+                }}
+                .plot-container {{
+                    background-color: #FFFFFF;
+                    padding: 20px;
+                    margin-bottom: 40px;
+                    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+                }}
+            </style>
+        </head>
+        <body>
+            <div class="plot-container">
+                {neighborhood}
+            </div>
+            <div class="plot-container">
+                {age}
+            </div>
+            <div class="plot-container">
+                {estar}
+            </div>
+        </body>
+    </html>
+    """
+
+    return HTMLResponse(content=html_content, status_code=200)
